@@ -2,7 +2,7 @@
 
 ### Download the source project then this template:
 * git clone https://github.com/mvvvv/StereoKit-rust/
-* git clone https://github.com/mvvvv/StereoKit-template/
+* git clone https://github.com/mvvvv/Stereokit-template/
 
 First, check that you can launch the Stereokit-rust demos as described here https://github.com/mvvvv/StereoKit-rust/blob/master/README.md
 
