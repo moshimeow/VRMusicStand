@@ -34,7 +34,7 @@ fn android_main(app: AndroidApp) {
     settings
         .app_name("stereokit-rust")
         .assets_folder("assets")
-        .origin(OriginMode::Stage)
+        .origin(OriginMode::Floor)
         .render_multisample(4)
         .render_scaling(2.0)
         .log_filter(LogLevel::Diagnostic);
@@ -53,15 +53,14 @@ fn android_main(app: AndroidApp) {
 #[allow(dead_code)]
 #[cfg(not(target_os = "android"))]
 fn main() {
-    use stereokit_rust::sk::{AppMode, DisplayMode};
+    use stereokit_rust::sk::AppMode;
 
     let mut settings = SkSettings::default();
     settings
         .app_name("stereokit-rust")
         .assets_folder("assets")
-        .origin(OriginMode::Stage)
+        .origin(OriginMode::Floor)
         .log_filter(LogLevel::Diagnostic)
-        .display_preference(DisplayMode::Flatscreen)
         .no_flatscreen_fallback(true)
         .mode(AppMode::Simulator);
 
