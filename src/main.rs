@@ -44,7 +44,6 @@ fn main() {
         .assets_folder("assets")
         .origin(OriginMode::Stage)
         .log_filter(LogLevel::Diagnostic)
-        .disable_flatscreen_mr_sim(false)
         .no_flatscreen_fallback(true);
 
     if is_testing {
