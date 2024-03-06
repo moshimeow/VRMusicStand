@@ -1,1 +1,1 @@
-Assets files directory
+Asset files directory
