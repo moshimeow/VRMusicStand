@@ -21,6 +21,16 @@ If you're using VsCode you'll see two launchers in launch.json to debug the temp
 ## Run the project's demo on your Android headset:
 * Launch: `cargo apk run`
 
+## Compile shaders
+If you want to create your own shaders, you'll need the binary `compile_sks` of the stereokit-rust project and so you have to 'install' the project: 
+* `cargo install --path <path to git directory of Stereokit-rust>`
+
+`compile_sks` calls the stereokit binary `skshaderc` using the following configuration:
+* The shaders (*.hlsl files) must be created inside the shaders_src directory inside the root directory of your project. 
+* The result (*.hlsl.sks files) will be produced inside the assets/shaders directory inside the root directory of your project.
+
+To compile the *.hlsl files, go to the root directory of your project then launch `cargo compile_sks`
+
 ## Troubleshooting
 Submit bugs on the [Issues tab](https://github.com/mvvvv/StereoKit-rust/issues), and ask questions in the [Discussions tab](https://github.com/mvvvv/StereoKit-rust/discussions)!
 

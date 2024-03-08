@@ -121,10 +121,10 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
         .add(LIGHT_BLUE, 0.5)
         .add(LIGHT_CYAN, 0.8)
         .add(WHITE, 1.0);
-    let mut cube0 = SHCubemap::gen_cubemap_gradient(gradient_sky, Vec3::Y, 1024);
+    let cube0 = SHCubemap::gen_cubemap_gradient(gradient_sky, Vec3::Y, 1024);
 
     //save the default cubemap.
-    let mut cube_default = SHCubemap::get_rendered_sky();
+    let cube_default = SHCubemap::get_rendered_sky();
     cube0.render_as_sky();
     let mut sky = 1;
 
