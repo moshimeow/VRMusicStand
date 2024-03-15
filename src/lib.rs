@@ -159,12 +159,12 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
             Ui::next_line();
             Ui::hseparator();
             if Ui::button("Exit", Some(Vec2::new(0.10, 0.10))) {
-                sk.quit();
+                sk.quit(None);
             }
             //Ui::image(&power_button, Vec2::new(0.1, 0.1));
 
             Ui::window_end();
         },
-        |_sk| {},
+        |sk| Log::info(format!("QuitReason is {:?}", sk.get_quit_reason())),
     );
 }
