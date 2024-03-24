@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use a_stepper::AStepper;
 use stereokit_rust::{
     maths::{units::*, Pose, Quat, Vec2, Vec3},
-    sk::{OriginMode, Sk, SkSettings, StepperAction},
+    sk::{Sk, StepperAction},
     sprite::Sprite,
     system::{Log, LogLevel},
     tex::SHCubemap,
@@ -30,6 +30,7 @@ use android_activity::AndroidApp;
 #[no_mangle]
 /// The main function for android app
 fn android_main(app: AndroidApp) {
+    use stereokit_rust::sk::{OriginMode, SkSettings};
     let mut settings = SkSettings::default();
     settings
         .app_name("stereokit-rust")
@@ -42,29 +43,6 @@ fn android_main(app: AndroidApp) {
     android_logger::init_once(android_logger::Config::default().with_max_level(log::LevelFilter::Debug));
 
     let (sk, event_loop) = settings.init(app).unwrap();
-
-    _main(sk, event_loop);
-}
-
-// #[allow(dead_code)]
-// #[cfg(target_os = "android")]
-// pub fn main() {}
-
-#[allow(dead_code)]
-#[cfg(not(target_os = "android"))]
-fn main() {
-    use stereokit_rust::sk::AppMode;
-
-    let mut settings = SkSettings::default();
-    settings
-        .app_name("stereokit-rust")
-        .assets_folder("assets")
-        .origin(OriginMode::Floor)
-        .log_filter(LogLevel::Diagnostic)
-        .no_flatscreen_fallback(true)
-        .mode(AppMode::Simulator);
-
-    let (sk, event_loop) = settings.init().unwrap();
 
     _main(sk, event_loop);
 }
