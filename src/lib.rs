@@ -6,7 +6,7 @@ use stereokit_rust::{
     maths::{units::*, Pose, Quat, Vec2, Vec3},
     sk::{Sk, StepperAction},
     sprite::Sprite,
-    system::{Log, LogLevel},
+    system::{Log, LogLevel, Renderer},
     tex::SHCubemap,
     tools::log_window::{LogItem, LogWindow},
     ui::{Ui, UiBtnLayout},
@@ -57,6 +57,8 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
     Log::diag(
         "======================================================================================================== !!",
     );
+    Renderer::scaling(1.5);
+    Renderer::multisample(4);
 
     // We want to be able to view the log using the LogWindow tool
     let fn_mut = |level: LogLevel, log_text: &str| {
