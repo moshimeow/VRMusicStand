@@ -122,7 +122,7 @@ value = "true"
 
 [[package.metadata.android.application.meta_data]]
 name = "com.oculus.supportedDevices"
-value = "quest|quest2|questpro|quest3"
+value = "quest2|questpro|quest3"
 
 [[package.metadata.android.application.meta_data]]
 name = "com.oculus.intent.category.VR"
