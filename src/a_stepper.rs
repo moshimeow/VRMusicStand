@@ -19,6 +19,8 @@ pub struct AStepper {
     text_style: TextStyle,
 }
 
+unsafe impl Send for AStepper {}
+
 impl Default for AStepper {
     fn default() -> Self {
         Self {
