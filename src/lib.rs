@@ -118,7 +118,7 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
     let radio_off = Sprite::radio_off();
     sk.run(
         event_loop,
-        |sk| {
+        |sk, _token| {
             Ui::window_begin("Template", &mut window_demo_pose, Some(Vec2::new(demo_win_width, 0.0)), None, None);
             if Ui::radio_img("Blue light", sky == 1, &radio_off, &radio_on, UiBtnLayout::Left, None) {
                 cube0.render_as_sky();
