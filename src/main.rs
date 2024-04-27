@@ -18,7 +18,7 @@ pub const USAGE: &str = r#"Usage : program [OPTION]
 #[cfg(not(target_os = "android"))]
 /// The main function when launched on PC. Set --test to use the simulator
 fn main() {
-    use my_vr_program::launch;
+    use stereokit_rust_template::launch;
 
     let mut headless = false;
     let mut is_testing = false;

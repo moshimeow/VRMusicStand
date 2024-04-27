@@ -6,20 +6,28 @@
 
 First, check that you can launch the Stereokit-rust demos as described here https://github.com/mvvvv/StereoKit-rust/blob/master/README.md
 
-Then, go to the Stereokit-template project.
+Then, go to the Stereokit-template project and transform it to your project :
+- by renaming the name, package and labels in Cargo.toml, 
+- and removing the .git in order to create yours,
 
-### Run the template on your PC's headset :
+### Run your project on your PC's headset :
 * Make sure you have [OpenXR installed](https://www.khronos.org/openxr/) with an active runtine.
 * Launch: `cargo run`
 
-### Run the template on your PC using the [simulator](https://stereokit.net/Pages/Guides/Using-The-Simulator.html) 
+### Run your project on your PC using the [simulator](https://stereokit.net/Pages/Guides/Using-The-Simulator.html) 
 * Launch: `cargo run  -- --test`
 
-If you're using VsCode you'll see two launchers in launch.json to debug the template.
+If you're using VsCode you'll see two launchers in launch.json to debug the project.
 
 
-## Run the project's demo on your Android headset:
+## Run the project on your Android headset:
 * Launch: `cargo apk run`
+
+## Build the release versions of your project:
+* Desktop : `cargo build --release`
+* Android : `cargo apk build --release`
+
+Binaries and APK archives are produced under ./target/release
 
 ## Compile shaders
 If you want to create your own shaders, you'll need the binary `compile_sks` of the stereokit-rust project and so you have to 'install' the project: 

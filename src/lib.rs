@@ -22,8 +22,8 @@ static LOG_LOG: Mutex<Vec<LogItem>> = Mutex::new(vec![]);
 
 //use crate::launch;
 #[cfg(target_os = "android")]
-//use winit::platform::android::activity::AndroidApp;
-use android_activity::AndroidApp;
+//use android_activity::AndroidApp;
+use winit::platform::android::activity::AndroidApp;
 
 #[allow(dead_code)]
 #[cfg(target_os = "android")]
