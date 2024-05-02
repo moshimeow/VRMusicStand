@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use a_stepper::AStepper;
 use stereokit_rust::{
     maths::{units::*, Pose, Quat, Vec2, Vec3},
-    sk::{Sk, StepperAction},
+    sk::{Sk, SkClosures, StepperAction},
     sprite::Sprite,
     system::{Log, LogLevel, Renderer},
     tex::SHCubemap,
@@ -116,7 +116,8 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
     );
     let radio_on = Sprite::radio_on();
     let radio_off = Sprite::radio_off();
-    sk.run(
+    SkClosures::run_app(
+        sk,
         event_loop,
         |sk, _token| {
             Ui::window_begin("Template", &mut window_demo_pose, Some(Vec2::new(demo_win_width, 0.0)), None, None);

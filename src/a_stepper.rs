@@ -5,8 +5,8 @@ use stereokit_rust::{
     material::Material,
     maths::{Matrix, Quat, Vec3},
     mesh::Mesh,
-    sk::{IStepper, MainThreadToken, SkInfo, StepperId},
-    system::{Renderer, Text, TextStyle},
+    sk::{IStepper, MainThreadToken, SkInfo, StepperClosures, StepperId},
+    system::{Renderer, Text},
     util::named_colors::RED,
 };
 
@@ -14,9 +14,7 @@ pub struct AStepper {
     id: StepperId,
     sk_info: Option<Rc<RefCell<SkInfo>>>,
     pub transform: Matrix,
-    round_cube: Mesh,
-    text: String,
-    text_style: TextStyle,
+    closures: StepperClosures<'static>,
 }
 
 unsafe impl Send for AStepper {}
@@ -27,9 +25,7 @@ impl Default for AStepper {
             id: "AStepper".to_string(),
             sk_info: None,
             transform: Matrix::tr(&((Vec3::NEG_Z * 2.5) + Vec3::Y), &Quat::from_angles(0.0, 180.0, 0.0)),
-            round_cube: Mesh::generate_rounded_cube(Vec3::ONE / 5.0, 0.2, Some(16)),
-            text: "Stepper A".to_owned(),
-            text_style: Text::make_style(Font::default(), 0.3, RED),
+            closures: StepperClosures::new(),
         }
     }
 }
@@ -38,17 +34,27 @@ impl IStepper for AStepper {
     fn initialize(&mut self, id: StepperId, sk_info: Rc<RefCell<SkInfo>>) -> bool {
         self.id = id;
         self.sk_info = Some(sk_info);
+
+        let round_cube = Mesh::generate_rounded_cube(Vec3::ONE / 5.0, 0.2, Some(16));
+        let text = "Stepper A".to_owned();
+        let text_style = Text::make_style(Font::default(), 0.3, RED);
+        let transform = self.transform;
+
+        self.closures.set(
+            move |token| {
+                Renderer::add_mesh(token, &round_cube, Material::pbr(), transform, Some(RED.into()), None);
+                Text::add_at(token, &text, transform, Some(text_style), None, None, None, None, None, None);
+            },
+            || {},
+        );
         true
     }
 
     fn step(&mut self, token: &MainThreadToken) {
-        self.draw(token)
+        self.closures.step(token)
     }
-}
 
-impl AStepper {
-    fn draw(&mut self, token: &MainThreadToken) {
-        Renderer::add_mesh(token, &self.round_cube, Material::pbr(), self.transform, Some(RED.into()), None);
-        Text::add_at(token, &self.text, self.transform, Some(self.text_style), None, None, None, None, None, None);
+    fn shutdown(&mut self) {
+        self.closures.shutdown()
     }
 }
