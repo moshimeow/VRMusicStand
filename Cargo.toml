@@ -8,11 +8,6 @@ license = "MIT"
 repository = "https://github.com/mvvvv/StereoKit-template"
 readme = "README.md"
 
-[features]
-default = ["build-dynamic-openxr"]
-dynamic-openxr = []                       # Add openxr_loader.so in Android APK
-build-dynamic-openxr = ["dynamic-openxr"] # Build openxr_loader from Khronos OpenXR project
-
 [lib]
 crate-type = ["lib", "cdylib"]
 

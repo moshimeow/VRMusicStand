@@ -55,7 +55,7 @@ fn main() {
         settings.disable_unfocused_sleep(true);
     }
 
-    let (sk, event_loop) = settings.init().unwrap();
+    let (sk, event_loop) = settings.init_with_event_loop().unwrap();
     launch(sk, event_loop, is_testing);
 }
 

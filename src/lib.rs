@@ -3,8 +3,9 @@ use std::sync::Mutex;
 
 use a_stepper::AStepper;
 use stereokit_rust::{
+    event_loop::{SkClosures, StepperAction},
     maths::{units::*, Pose, Quat, Vec2, Vec3},
-    sk::{Sk, SkClosures, StepperAction},
+    sk::Sk,
     sprite::Sprite,
     system::{Log, LogLevel, Renderer},
     tex::SHCubemap,
@@ -42,7 +43,7 @@ fn android_main(app: AndroidApp) {
 
     android_logger::init_once(android_logger::Config::default().with_max_level(log::LevelFilter::Debug));
 
-    let (sk, event_loop) = settings.init(app).unwrap();
+    let (sk, event_loop) = settings.init_with_event_loop(app).unwrap();
 
     _main(sk, event_loop);
 }
@@ -64,15 +65,25 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
     let fn_mut = |level: LogLevel, log_text: &str| {
         let mut items = LOG_LOG.lock().unwrap();
         for line_text in log_text.lines() {
-            if let Some(item) = items.last_mut() {
-                if item.text.eq(line_text) {
-                    item.count += 1;
-                    return;
-                }
+            let subs = line_text.as_bytes().chunks(120);
+            for (pos, sub_line) in subs.enumerate() {
+                if let Ok(mut sub_string) = String::from_utf8(sub_line.to_vec()) {
+                    if pos > 0 {
+                        sub_string.insert_str(0, "‣‣‣‣");
+                    }
+                    if let Some(item) = items.last_mut() {
+                        if item.text == sub_string {
+                            item.count += 1;
+                            continue;
+                        }
+                    }
+
+                    items.push(LogItem { level, text: sub_string.to_owned(), count: 1 });
+                };
             }
-            items.push(LogItem { level, text: line_text.to_owned(), count: 1 });
         }
     };
+
     Log::subscribe(fn_mut);
     // need a way to do that properly Log::unsubscribe(fn_mut);
 
@@ -84,7 +95,7 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
 
     sk.push_action(StepperAction::add("LogWindow", log_window));
     // Open or close the log window
-    let event_loop_proxy = sk.get_event_loop_proxy().clone();
+    let event_loop_proxy = sk.get_event_loop_proxy().clone().unwrap();
     let send_event_show_log = move || {
         let _ = &event_loop_proxy.send_event(StepperAction::event("main".to_string(), "ShowLogWindow", "1"));
     };
