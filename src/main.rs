@@ -18,6 +18,7 @@ pub const USAGE: &str = r#"Usage : program [OPTION]
 #[cfg(not(target_os = "android"))]
 /// The main function when launched on PC. Set --test to use the simulator
 fn main() {
+    use stereokit_rust::sk::Sk;
     use stereokit_rust_template::launch;
 
     let mut headless = false;
@@ -57,6 +58,7 @@ fn main() {
 
     let (sk, event_loop) = settings.init_with_event_loop().unwrap();
     launch(sk, event_loop, is_testing);
+    Sk::shutdown();
 }
 
 #[allow(dead_code)]
