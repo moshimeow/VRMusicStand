@@ -1,13 +1,12 @@
-pub mod a_stepper;
 use std::sync::Mutex;
 
-use a_stepper::AStepper;
 use stereokit_rust::{
+    // Lines, LinePoint,
     event_loop::{SkClosures, StepperAction},
     maths::{units::*, Pose, Quat, Vec2, Vec3},
     sk::Sk,
     sprite::Sprite,
-    system::{Log, LogLevel, Renderer},
+    system::{Log, LogLevel, Renderer, Line, LinePoint},
     tex::SHCubemap,
     tools::log_window::{LogItem, LogWindow},
     ui::{Ui, UiBtnLayout},
@@ -120,8 +119,6 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
     cube0.render_as_sky();
     let mut sky = 1;
 
-    // launch AStepper a basic stepper
-    sk.push_action(StepperAction::add_default::<AStepper>("AStepper"));
 
     Log::diag(
         "======================================================================================================== !!",
@@ -157,6 +154,8 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
             //Ui::image(&power_button, Vec2::new(0.1, 0.1));
 
             Ui::window_end();
+
+            // Lines::
         },
         |sk| Log::info(format!("QuitReason is {:?}", sk.get_quit_reason())),
     );

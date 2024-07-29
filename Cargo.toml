@@ -8,13 +8,16 @@ license = "MIT"
 repository = "https://github.com/mvvvv/StereoKit-template"
 readme = "README.md"
 
+# [build]
+# target="aarch64-linux-android"
+
 [lib]
 crate-type = ["lib", "cdylib"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 stereokit-rust = { path = "../stereokit-rust"} #, features = ["build-dynamic-openxr"] }
-winit = { version = "0.30", features = [ "android-native-activity" ] }
+winit = { version = "0.30", features = [ "android-native-activity" ] } # , "event-loop"
 
 [target.'cfg(target_os = "android")'.dependencies]
 log = "0.4"
