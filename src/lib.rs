@@ -6,13 +6,13 @@ use stereokit_rust::{
     maths::{units::*, Pose, Quat, Vec2, Vec3},
     sk::Sk,
     sprite::Sprite,
-    system::{Log, LogLevel, Renderer, Line, LinePoint},
+    system::{Log, LogLevel, Renderer, Lines, LinePoint},
     tex::SHCubemap,
     tools::log_window::{LogItem, LogWindow},
     ui::{Ui, UiBtnLayout},
     util::{
         named_colors::{BLUE, LIGHT_BLUE, LIGHT_CYAN, WHITE},
-        Color128, Gradient,
+        Color128, Gradient, Color32
     },
 };
 use winit::event_loop::EventLoop;
@@ -155,7 +155,25 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
 
             Ui::window_end();
 
-            // Lines::
+            
+            let mut line_points = [
+                LinePoint {
+                pt: Vec3::new(3.0, 2.0, -3.0),
+                thickness: 0.1,
+                color: Color32::new(0, 0, 0, 255),
+            }, LinePoint {
+                pt: Vec3::new(-3.0, 2.0, -3.0),
+                thickness: 0.1,
+                color: Color32::new(255, 0, 255, 255),
+            }, LinePoint {
+                pt: Vec3::new(-4.0, 2.0, -2.0),
+                thickness: 0.1,
+                color: Color32::new(255, 255, 255, 255),
+            }
+            ];
+
+
+            Lines::add_list(_token, &line_points);
         },
         |sk| Log::info(format!("QuitReason is {:?}", sk.get_quit_reason())),
     );
