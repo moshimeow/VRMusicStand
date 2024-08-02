@@ -1,21 +1,58 @@
-use std::sync::Mutex;
+use std::{sync::Mutex, vec};
 
 use stereokit_rust::{
     // Lines, LinePoint,
     event_loop::{SkClosures, StepperAction},
-    maths::{units::*, Pose, Quat, Vec2, Vec3},
+    maths::{units::*, Matrix, Pose, Quat, Vec2, Vec3},
     sk::Sk,
-    sprite::Sprite,
-    system::{Log, LogLevel, Renderer, Lines, LinePoint},
+    sprite::{Sprite, SpriteType},
+    system::{Backend, BackendOpenXR, BackendXRType, BtnState, Input, Key, LinePoint, Lines, Log, LogLevel, Projection, Renderer, Text},
     tex::SHCubemap,
-    tools::log_window::{LogItem, LogWindow},
+    tools::{
+        log_window::{LogItem, LogWindow}, 
+        passthrough_fb_ext::{PassthroughFbExt, PASSTHROUGH_FLIP},
+    },
     ui::{Ui, UiBtnLayout},
     util::{
-        named_colors::{BLUE, LIGHT_BLUE, LIGHT_CYAN, WHITE},
-        Color128, Gradient, Color32
+        named_colors::{BLUE, LIGHT_BLUE, LIGHT_CYAN, WHITE}, Color128, Color32, Gradient
     },
 };
+
+use stereokit_rust::sk::MainThreadToken;
+use stereokit_rust::system::TextAlign;
+
 use winit::event_loop::EventLoop;
+
+use std::array;
+
+// use make_pdf::export_pdf_to_jpegs;
+
+
+struct AppState {
+    vec_sprites: Vec<Sprite>,
+
+    root_window_pose:  Pose,
+    prev_button_window_pose: Pose,
+    next_button_window_pose: Pose,
+    piano_window_pose: Pose,
+
+    frame_idx_to_start_passthrough: u32,
+    piano_sheet_idx: u32
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            vec_sprites: Vec::new(),
+            root_window_pose: Pose::new(Vec3::new(-0.7, 1.5, -0.3), Some(Quat::look_dir(Vec3::new(1.0, 0.0, 1.0)))),
+            prev_button_window_pose: Pose::new(Vec3::new(0.5, 0.0, 0.0), None),
+            next_button_window_pose: Pose::new(Vec3::new(-0.5, 0.0, 0.0), None),
+            piano_window_pose: Pose::new(Vec3::new(0.0, 0.3, -0.1), None),
+            frame_idx_to_start_passthrough: 0,
+            piano_sheet_idx: 0
+        }
+    }
+}
 
 /// Somewhere to copy the log
 static LOG_LOG: Mutex<Vec<LogItem>> = Mutex::new(vec![]);
@@ -43,9 +80,32 @@ fn android_main(app: AndroidApp) {
 
     android_logger::init_once(android_logger::Config::default().with_max_level(log::LevelFilter::Debug));
 
+    BackendOpenXR::request_ext("XR_FB_passthrough");
+
     let (sk, event_loop) = settings.init_with_event_loop(app).unwrap();
 
     _main(sk, event_loop);
+}
+
+pub fn draw_spiral(sk: &Sk, _token: &MainThreadToken) {
+    let mut line_points = [
+        LinePoint {
+        pt: Vec3::new(3.0, 2.0, -3.0),
+        thickness: 0.1,
+        color: Color32::new(0, 0, 0, 255),
+    }, LinePoint {
+        pt: Vec3::new(-3.0, 2.0, -3.0),
+        thickness: 0.1,
+        color: Color32::new(255, 0, 255, 255),
+    }, LinePoint {
+        pt: Vec3::new(-4.0, 2.0, -2.0),
+        thickness: 0.1,
+        color: Color32::new(255, 255, 255, 255),
+    }
+    ];
+
+
+    Lines::add_list(_token, &line_points);
 }
 
 pub fn _main(sk: Sk, event_loop: EventLoop<StepperAction>) {
@@ -115,9 +175,20 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
     let cube0 = SHCubemap::gen_cubemap_gradient(gradient_sky, Vec3::Y, 1024);
 
     //save the default cubemap.
-    let cube_default = SHCubemap::get_rendered_sky();
-    cube0.render_as_sky();
+    // let cube_default = SHCubemap::get_rendered_sky();
+    // cube0.render_as_sky();
     let mut sky = 1;
+
+    let mut passthrough = false;
+    let passthrough_enabled = BackendOpenXR::ext_enabled("XR_FB_passthrough");
+    // Box<PassthroughFbExt> guy = Box::new()
+    if passthrough_enabled {
+        // sk.push_action(StepperAction::add("PassthroughFbExt", PassthroughFbExt::new(true)));
+        sk.push_action(StepperAction::add_default::<PassthroughFbExt>("PassthroughFbExt"));
+        Log::diag("Passthrough Disabled !!");
+    } else {
+        Log::diag("No Passthrough !!");
+    }
 
 
     Log::diag(
@@ -125,55 +196,105 @@ pub fn launch(mut sk: Sk, event_loop: EventLoop<StepperAction>, _is_testing: boo
     );
     let radio_on = Sprite::radio_on();
     let radio_off = Sprite::radio_off();
+
+
+
+    let mut app_state: AppState = AppState::default();
+
+    // let mut vec_sprites: Vec<Sprite> = Vec::new();
+
+    for i in 0..10 {
+        let name = format!("{}.png", i);
+        app_state.vec_sprites.push(Sprite::from_file(name, None, None).unwrap());
+        // let mut sprite: Sprite = Sprite::from_file(name);
+    }
+
+
+    let mut did: i32 = 0;
+
+    let mut our_state_guy: AppState = AppState::default(); 
+
+
+    
+    // AppState {
+    //     sprites : std::array::from_fn(|i| {Sprite::from_file(format!("{}.png", i), Some(SpriteType::Single), Some("tagada")).unwrap() }),
+    //     meow : false
+    // };
+
+    let mut piano_sheet_idx: usize = 0;
+
+
+
+
     SkClosures::run_app(
         sk,
         event_loop,
         |sk, _token| {
-            Ui::window_begin("Template", &mut window_demo_pose, Some(Vec2::new(demo_win_width, 0.0)), None, None);
-            if Ui::radio_img("Blue light", sky == 1, &radio_off, &radio_on, UiBtnLayout::Left, None) {
-                cube0.render_as_sky();
-                sky = 1;
+
+            if app_state.frame_idx_to_start_passthrough < 500 {
+                // Don't increment it forever (ie. don't eventually overflow)
+                app_state.frame_idx_to_start_passthrough = app_state.frame_idx_to_start_passthrough+1;
             }
+            if app_state.frame_idx_to_start_passthrough == 100 {
+                sk.push_action(StepperAction::event("main".into(), PASSTHROUGH_FLIP, "1"));
+            } else {
+
+            }
+
+            Ui::window_begin("Piano!", &mut window_demo_pose, None, None, None);
+
+            for i in piano_sheet_idx..piano_sheet_idx+2 {
+
+                println!("{}, {}", i, app_state.vec_sprites.get(i).is_none());
+
+                if let Some(sprite) = app_state.vec_sprites.get(i) {
+                    let j = i - piano_sheet_idx;
+                    let sf: f32 = 0.7;
+                    let sf2 = 0.8;
+                    let trans = Vec3::new( (j as f32) * (-sf as f32) + (sf * 0.5), sf * 0.6, 0.5);
+                    let rot = Quat::from_angles(-20.0, 0.0, 0.0);
+                    let s = Vec3::new(sf2, sf2, sf2);
+                    let transform: Matrix = Matrix::trs(&trans, &rot, &s);
+                    sprite.draw(_token, transform, TextAlign::Center, None);
+                }
+            }
+
+            if Ui::button("Prev", Some(Vec2::new(0.8, 0.1))) {
+                if piano_sheet_idx > 0 {
+                    piano_sheet_idx-=1; 
+                }
+                
+            }
+
             Ui::same_line();
-            if Ui::radio_img("Default light", sky == 2, &radio_off, &radio_on, UiBtnLayout::Left, None) {
-                cube_default.render_as_sky();
-                sky = 2;
+            Ui::hspace(0.3);
+
+
+
+            if Ui::button("Next", Some(Vec2::new(0.8, 0.1))) {
+                if piano_sheet_idx < 8 {
+                    piano_sheet_idx+=1;
+                }
             }
-            Ui::same_line();
-            Ui::hspace(0.25);
-            Ui::same_line();
-            if let Some(new_value) = Ui::toggle("Show Log", show_log, None) {
-                show_log = new_value;
-                send_event_show_log();
-            }
-            Ui::next_line();
-            Ui::hseparator();
-            if Ui::button("Exit", Some(Vec2::new(0.10, 0.10))) {
-                sk.quit(None);
-            }
-            //Ui::image(&power_button, Vec2::new(0.1, 0.1));
+
+            // Ui::window_begin("Subwindow!", None, None, None);
+
 
             Ui::window_end();
 
+            draw_spiral(sk, _token);
+
+
+
+
+            // vec_sprites.iter().for_each(
+            //     || {
+
+            //     }
+
+            // )
+
             
-            let mut line_points = [
-                LinePoint {
-                pt: Vec3::new(3.0, 2.0, -3.0),
-                thickness: 0.1,
-                color: Color32::new(0, 0, 0, 255),
-            }, LinePoint {
-                pt: Vec3::new(-3.0, 2.0, -3.0),
-                thickness: 0.1,
-                color: Color32::new(255, 0, 255, 255),
-            }, LinePoint {
-                pt: Vec3::new(-4.0, 2.0, -2.0),
-                thickness: 0.1,
-                color: Color32::new(255, 255, 255, 255),
-            }
-            ];
-
-
-            Lines::add_list(_token, &line_points);
         },
         |sk| Log::info(format!("QuitReason is {:?}", sk.get_quit_reason())),
     );
